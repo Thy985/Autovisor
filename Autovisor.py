@@ -18,6 +18,7 @@ from modules.slider import slider_verify
 from modules.tasks import video_optimize, play_video, skip_questions, wait_for_verify, task_monitor
 from modules import installer
 from modules.banner import print_banner
+from modules.fusion import is_new_fusion_url, fusion_loop
 from modules.login import (
     LOGIN_PASSWORD_SELECTOR,
     LOGIN_SUBMIT_SELECTOR,
@@ -345,7 +346,11 @@ async def main():
                 course_title = await title_selector.text_content()
                 logger.info(f"当前课程:<<{course_title}>>， 是翻转课哎")
             # 启动课程主循环
-            await working_loop(page, is_new_version=is_new_version, is_hike_class=is_hike_class)
+            if is_new_fusion_url(course_url):
+                logger.info("检测到新版融合共享课 URL, 使用 FusionLoop 适配器.")
+                await fusion_loop(page, config)
+            else:
+                await working_loop(page, is_new_version=is_new_version, is_hike_class=is_hike_class)
     print("===== Task Finished =====")
     logger.info("所有课程已学习完毕!")
     show_donate(get_runtime_path("resources", "QRcode.jpg"), show=config.showDonateCode)
