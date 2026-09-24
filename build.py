@@ -1,9 +1,10 @@
 import os
 import shutil
+import sys
 name = "Autovisor"
 
 cmd = (
-    f"pyinstaller "
+    f"\"{sys.executable}\" -m PyInstaller "
     f"--log-level=INFO "
     f"--noconfirm "
     f"-c "

@@ -336,6 +336,11 @@ async def main():
             # 关闭弹窗,优化页面结构
             await optimize_page(page, config, is_new_version, is_hike_class)
             logger.info("页面优化完成!")
+            # 融合共享课：直接使用 FusionLoop（旧版 .source-name 等选择器在融合页不存在，会超时卡住）
+            if is_new_fusion_url(course_url):
+                logger.info("检测到新版融合共享课 URL, 使用 FusionLoop 适配器.")
+                await fusion_loop(page, config)
+                continue
             # 获取课程标题
             if not is_new_version and is_hike_class is False:
                 title_selector = await page.wait_for_selector(".source-name")
@@ -346,11 +351,7 @@ async def main():
                 course_title = await title_selector.text_content()
                 logger.info(f"当前课程:<<{course_title}>>， 是翻转课哎")
             # 启动课程主循环
-            if is_new_fusion_url(course_url):
-                logger.info("检测到新版融合共享课 URL, 使用 FusionLoop 适配器.")
-                await fusion_loop(page, config)
-            else:
-                await working_loop(page, is_new_version=is_new_version, is_hike_class=is_hike_class)
+            await working_loop(page, is_new_version=is_new_version, is_hike_class=is_hike_class)
     print("===== Task Finished =====")
     logger.info("所有课程已学习完毕!")
     show_donate(get_runtime_path("resources", "QRcode.jpg"), show=config.showDonateCode)
